@@ -9,7 +9,7 @@ import (
 
 //go:generate go run github.com/ogen-go/ogen/cmd/ogen --target api/ -package api --clean song_detail_scheme.yml
 func main() {
-	client, err := api.NewClient("http://localhost:8090")
+	client, err := api.NewClient("http://app:8090")
 	if err != nil {
 		fmt.Println(err)
 	}

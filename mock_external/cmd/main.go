@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -23,7 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := http.ListenAndServe(":8090", server); err != nil {
+	fmt.Println("SERVING MOCK")
+	if err := http.ListenAndServe("0.0.0.0:8090", server); err != nil {
 		log.Fatal(err)
 	}
 }
