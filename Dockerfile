@@ -9,7 +9,6 @@ WORKDIR /app
 COPY mock_external/ ./mock_external
 COPY service/ ./service
 COPY api/ ./api
-COPY song_detail_scheme.yml ./
 COPY scripts/exec.sh ./
 
 
