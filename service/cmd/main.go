@@ -63,7 +63,8 @@ func main() {
 	}
 	l.Println("[INFO] Successfully applied migrations")
 
-	client, err := api.NewClient("http://app:8090")
+	mockPort := envWithDefault("MOCK_EXTERNAL_PORT", "8090")
+	client, err := api.NewClient("http://app:" + mockPort)
 	if err != nil {
 		l.Fatalln(err)
 	}
