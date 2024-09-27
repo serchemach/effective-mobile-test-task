@@ -9,8 +9,9 @@ WORKDIR /app
 COPY mock_external/ ./mock_external
 COPY service/ ./service
 COPY api/ ./api
+COPY migrations/ ./migrations
 COPY scripts/exec.sh ./
-
+COPY .env ./
 
 RUN cd mock_external && go mod download
 RUN cd service && go mod download
