@@ -7,7 +7,7 @@ import (
 	"github.com/serchemach/effective-mobile-test-task/api"
 )
 
-//go:generate go run github.com/ogen-go/ogen/cmd/ogen --target api/ -package api --clean song_detail_scheme.yml
+//go:generate go run github.com/ogen-go/ogen/cmd/ogen --target ../../api/ -package api --clean ../../api/song_detail_scheme.yml
 func main() {
 	client, err := api.NewClient("http://app:8090")
 	if err != nil {

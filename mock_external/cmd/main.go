@@ -17,7 +17,7 @@ func (m *mockExternal) InfoGet(ctx context.Context, params api.InfoGetParams) (a
 	return &api.SongDetail{ReleaseDate: params.Group, Text: params.Song}, nil
 }
 
-//go:generate go run github.com/ogen-go/ogen/cmd/ogen --target ../../api/ -package api --clean song_detail_scheme.yml
+//go:generate go run github.com/ogen-go/ogen/cmd/ogen --target ../../api/ -package api --clean ../../api/song_detail_scheme.yml
 func main() {
 	server, err := api.NewServer(&mockExternal{})
 	if err != nil {
