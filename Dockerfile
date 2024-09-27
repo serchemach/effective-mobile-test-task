@@ -10,7 +10,7 @@ COPY mock_external/ ./mock_external
 COPY service/ ./service
 COPY api/ ./api
 COPY song_detail_scheme.yml ./
-COPY exec.sh ./
+COPY scripts/exec.sh ./
 
 
 RUN cd mock_external && go mod download
