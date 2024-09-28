@@ -117,9 +117,37 @@ func CreateServer(l *log.Logger) humacli.CLI {
 	return humacli.New(func(hooks humacli.Hooks, options *Options) {
 		// Create a new router & API
 		router := http.NewServeMux()
-		api := humago.New(router, huma.DefaultConfig("My API", "1.0.0"))
+		config := huma.DefaultConfig("My API", "1.0.0")
+		config.DocsPath = ""
+
+		api := humago.New(router, config)
 
 		addRoutes(api)
+		router.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(`<!DOCTYPE html>
+		<html lang="en">
+		<head>
+		  <meta charset="utf-8" />
+		  <meta name="viewport" content="width=device-width, initial-scale=1" />
+		  <meta name="description" content="SwaggerUI" />
+		  <title>SwaggerUI</title>
+		  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+		</head>
+		<body>
+		<div id="swagger-ui"></div>
+		<script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
+		<script>
+		  window.onload = () => {
+		    window.ui = SwaggerUIBundle({
+		      url: '/openapi.json',
+		      dom_id: '#swagger-ui',
+		    });
+		  };
+		</script>
+		</body>
+		</html>`))
+		})
 
 		// Tell the CLI how to start your server.
 		hooks.OnStart(func() {

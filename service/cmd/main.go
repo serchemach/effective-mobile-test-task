@@ -7,9 +7,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/joho/godotenv"
 	"github.com/serchemach/effective-mobile-test-task/api"
 	"github.com/serchemach/effective-mobile-test-task/service/db"
+	"github.com/serchemach/effective-mobile-test-task/service/handling"
 )
 
 func envWithDefault(key, fallback string) string {
@@ -59,15 +61,24 @@ func main() {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", postgresUser, postgresPass, postgresUrl, postgresDb)
 	err = db.InitializeMigrations("file://migrations", connString)
 	if err != nil {
-		l.Fatalln(err)
+		if errors.Is(err, migrate.ErrNoChange) {
+			l.Println("[INFO] Migrations were not necessary")
+		} else {
+			l.Fatalln(err)
+		}
+	} else {
+		l.Println("[INFO] Successfully applied migrations")
 	}
-	l.Println("[INFO] Successfully applied migrations")
 
 	mockPort := envWithDefault("MOCK_EXTERNAL_PORT", "8090")
 	client, err := api.NewClient("http://app:" + mockPort)
 	if err != nil {
 		l.Fatalln(err)
 	}
+	l.Println("[INFO] Successfully initialized external api client")
+
+	cli := handling.CreateServer(l)
+	cli.Run()
 
 	result, err := client.InfoGet(context.Background(), api.InfoGetParams{Group: "123", Song: "123"})
 	if err != nil {

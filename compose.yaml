@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports: 
-      - "8080:8080"
+      - "${SERVICE_PORT}:${SERVICE_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
