@@ -29,18 +29,18 @@ type SongFull struct {
 }
 
 type SongDeleteInput struct {
-	SongId int `json:"song_id" doc:"The internal identifier of the song"`
+	SongId int `json:"song_id" query:"song_id" doc:"The internal identifier of the song"`
 }
 
 type SongSearchInput struct {
-	Group       string `json:"group" doc:"The creator of the song"`
-	Song        string `json:"song" doc:"The name of the song"`
-	ReleaseDate string `json:"release_date" doc:"The release date of the song in format DD.MM.YYYY"`
-	Text        string `json:"text" doc:"The lyrics of the song"`
-	Link        string `json:"link" doc:"Link to the song"`
-	SortBy      string `json:"sort_by" doc:"The column to sort by"`
-	PageNum     int    `json:"page_num" doc:"The number of the fetched page"`
-	PageLimit   int    `json:"page_limit" doc:"The maximum number of songs per page"`
+	Group       string `query:"group" doc:"The creator of the song"`
+	Song        string `query:"song" doc:"The name of the song"`
+	ReleaseDate string `query:"release_date" doc:"The release date of the song in format DD.MM.YYYY"`
+	Text        string `query:"text" doc:"The lyrics of the song"`
+	Link        string `query:"link" doc:"Link to the song"`
+	SortBy      string `query:"sort_by" doc:"The column to sort by"`
+	PageNum     int    `query:"page_num" doc:"The number of the fetched page"`
+	PageLimit   int    `query:"page_limit" doc:"The maximum number of songs per page"`
 }
 
 type SongSearchOutput struct {
@@ -50,9 +50,9 @@ type SongSearchOutput struct {
 }
 
 type SongTextFetchInput struct {
-	SongId    int `json:"song_id" doc:"The id of the song"`
-	PageNum   int `json:"page_num" doc:"The number of the fetched page"`
-	PageLimit int `json:"page_limit" doc:"The maximum number of paragraphs per page"`
+	SongId    int `query:"song_id" doc:"The id of the song"`
+	PageNum   int `query:"page_num" doc:"The number of the fetched page"`
+	PageLimit int `query:"page_limit" doc:"The maximum number of paragraphs per page"`
 }
 
 type SongTextFetchOutput struct {
@@ -68,7 +68,7 @@ func addRoutes(api huma.API) {
 		Path:        "/api/v1/song",
 		Summary:     "Add a new song",
 		Description: "Create a new song and fetch the details from a remote API.",
-	}, func(ctx context.Context, input *SongCreateInput) (*SongFull, error) {
+	}, func(ctx context.Context, input *struct{ Body SongCreateInput }) (*struct{ Body SongFull }, error) {
 		return nil, nil
 	})
 
@@ -78,7 +78,7 @@ func addRoutes(api huma.API) {
 		Path:        "/api/v1/song",
 		Summary:     "Update a song",
 		Description: "Replace the contents of a song with song_id.",
-	}, func(ctx context.Context, input *SongFull) (*SongFull, error) {
+	}, func(ctx context.Context, input *struct{ Body SongFull }) (*struct{ Body SongFull }, error) {
 		return nil, nil
 	})
 
@@ -88,7 +88,7 @@ func addRoutes(api huma.API) {
 		Path:        "/api/v1/song",
 		Summary:     "Delete a song",
 		Description: "Deletes a song with song_id.",
-	}, func(ctx context.Context, input *SongDeleteInput) (*SongFull, error) {
+	}, func(ctx context.Context, input *struct{ Body SongDeleteInput }) (*struct{ Body SongFull }, error) {
 		return nil, nil
 	})
 
@@ -98,7 +98,7 @@ func addRoutes(api huma.API) {
 		Path:        "/api/v1/song",
 		Summary:     "Get songs",
 		Description: "Fetches songs, filtered and with pagination.",
-	}, func(ctx context.Context, input *SongSearchInput) (*SongSearchOutput, error) {
+	}, func(ctx context.Context, input *SongSearchInput) (*struct{ Body SongSearchOutput }, error) {
 		return nil, nil
 	})
 
@@ -108,12 +108,21 @@ func addRoutes(api huma.API) {
 		Path:        "/api/v1/lyrics",
 		Summary:     "Get songs",
 		Description: "Fetches lyric paragraphs, filtered and with pagination.",
-	}, func(ctx context.Context, input *SongTextFetchInput) (*SongTextFetchOutput, error) {
+	}, func(ctx context.Context, input *SongTextFetchInput) (*struct{ Body SongTextFetchOutput }, error) {
 		return nil, nil
 	})
 }
 
+func logMiddleware(l *log.Logger, ctx huma.Context, next func(huma.Context)) {
+	l.Println(ctx.Operation())
+	next(ctx)
+}
+
 func CreateServer(l *log.Logger) humacli.CLI {
+	internalLogMiddleware := func(ctx huma.Context, next func(huma.Context)) {
+		logMiddleware(l, ctx, next)
+	}
+
 	return humacli.New(func(hooks humacli.Hooks, options *Options) {
 		// Create a new router & API
 		router := http.NewServeMux()
@@ -121,6 +130,7 @@ func CreateServer(l *log.Logger) humacli.CLI {
 		config.DocsPath = ""
 
 		api := humago.New(router, config)
+		api.UseMiddleware(internalLogMiddleware)
 
 		addRoutes(api)
 		router.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
